@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MunchBox logo">
+  <defs>
+    <linearGradient id="badge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8c00"/>
+      <stop offset="100%" stop-color="#e63900"/>
+    </linearGradient>
+    <linearGradient id="bunTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd180"/>
+      <stop offset="100%" stop-color="#f4a020"/>
+    </linearGradient>
+    <linearGradient id="bunBot" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f4a020"/>
+      <stop offset="100%" stop-color="#e8920a"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Badge background -->
+  <circle cx="32" cy="32" r="30" fill="url(#badge)"/>
+  <circle cx="32" cy="32" r="27" fill="none" stroke="#ffc107" stroke-width="2" opacity="0.85"/>
+
+  <!-- Pizza slice (back right) -->
+  <g filter="url(#shadow)">
+    <path d="M36 10 L56 52 L20 52 Z" fill="#ffca28" stroke="#f9a825" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M36 10 L56 52 L20 52 Z" fill="#ff8f00" opacity="0.18"/>
+    <line x1="36" y1="10" x2="38" y2="52" stroke="#f57f17" stroke-width="1" opacity="0.35"/>
+    <circle cx="42" cy="38" r="3" fill="#c62828"/>
+    <circle cx="48" cy="30" r="2.5" fill="#c62828"/>
+    <circle cx="38" cy="46" r="2.2" fill="#c62828"/>
+    <circle cx="46" cy="44" r="2" fill="#c62828"/>
+    <circle cx="34" cy="32" r="1.8" fill="#c62828" opacity="0.8"/>
+  </g>
+
+  <!-- Burger (front left) -->
+  <g filter="url(#shadow)">
+    <!-- Bottom bun -->
+    <path d="M14 44 C14 44 22 50 32 50 C42 50 50 44 50 44 L50 48 C50 48 42 54 32 54 C22 54 14 48 14 48 Z" fill="url(#bunBot)"/>
+
+    <!-- Patty -->
+    <rect x="15" y="38" width="34" height="7" rx="3.5" fill="#4e342e"/>
+    <rect x="15" y="38" width="34" height="3" rx="1.5" fill="#6d4c41" opacity="0.5"/>
+
+    <!-- Lettuce -->
+    <path d="M14 36 C18 33 22 36 26 33 C30 36 34 33 38 36 C42 33 46 36 50 33 L50 38 L14 38 Z" fill="#43a047"/>
+    <path d="M14 36 C18 34 22 36 26 34 C30 36 34 34 38 36 C42 34 46 36 50 34" fill="none" stroke="#2e7d32" stroke-width="0.8" opacity="0.5"/>
+
+    <!-- Cheese -->
+    <path d="M15 34 L19 37 L23 34 L27 37 L31 34 L35 37 L39 34 L43 37 L47 34 L49 36 L15 36 Z" fill="#ffc107"/>
+
+    <!-- Top bun -->
+    <path d="M15 18 C15 18 22 10 32 10 C42 10 49 18 49 18 L49 30 C49 30 42 26 32 26 C22 26 15 30 15 30 Z" fill="url(#bunTop)"/>
+
+    <!-- Sesame seeds -->
+    <ellipse cx="24" cy="19" rx="2" ry="1" fill="#fff8e1" transform="rotate(-20 24 19)"/>
+    <ellipse cx="32" cy="16" rx="2" ry="1" fill="#fff8e1"/>
+    <ellipse cx="40" cy="19" rx="2" ry="1" fill="#fff8e1" transform="rotate(20 40 19)"/>
+    <ellipse cx="28" cy="22" rx="1.5" ry="0.75" fill="#fff8e1" transform="rotate(10 28 22)"/>
+    <ellipse cx="36" cy="22" rx="1.5" ry="0.75" fill="#fff8e1" transform="rotate(-10 36 22)"/>
+  </g>
+</svg>

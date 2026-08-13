@@ -1,0 +1,16 @@
+{
+  "name": "munchbox",
+  "version": "1.0.0",
+  "description": "Full-stack fast food ordering website for MunchBox",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["restaurant", "fast-food", "express"],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
