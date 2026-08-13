@@ -131,10 +131,17 @@ function initNavbar() {
 
   Cart.updateCartBadge();
 
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const currentPage = getCurrentPage();
   document.querySelectorAll('.navbar__nav a, .navbar__mobile-nav a').forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href === currentPage || (currentPage === '' && href === 'index.html')) {
+    const href = link.getAttribute('href') || '';
+    const linkPage =
+      href.includes('page=menu') || href === 'menu.html'
+        ? 'menu'
+        : href.includes('page=cart') || href === 'cart.html'
+          ? 'cart'
+          : 'home';
+
+    if (linkPage === currentPage) {
       link.classList.add('active');
     }
   });
@@ -142,6 +149,80 @@ function initNavbar() {
 
 function validatePhone(phone) {
   return /^[\d\s\-+()]{7,20}$/.test(phone.trim());
+}
+
+async function fetchMenu() {
+  try {
+    const response = await fetch('/api/menu');
+    if (response.ok) return response.json();
+  } catch {
+    /* fall through to static menu */
+  }
+
+  const response = await fetch('data/menu.json');
+  if (!response.ok) throw new Error('Failed to load menu');
+  return response.json();
+}
+
+function generateOrderId() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `MBX-${timestamp}-${random}`;
+}
+
+async function submitOrder(orderData) {
+  try {
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+
+    if (response.ok) return response.json();
+
+    const result = await response.json();
+    return { success: false, errors: result.errors || ['Failed to place order.'] };
+  } catch {
+    /* fall through to client-side demo order */
+  }
+
+  const order = {
+    id: generateOrderId(),
+    ...orderData,
+    status: 'confirmed',
+    estimatedMinutes: orderData.orderType === 'delivery' ? 35 : 20,
+    createdAt: new Date().toISOString(),
+  };
+
+  sessionStorage.setItem(`order_${order.id}`, JSON.stringify(order));
+
+  return {
+    success: true,
+    order: {
+      id: order.id,
+      status: order.status,
+      estimatedMinutes: order.estimatedMinutes,
+      total: order.total,
+      orderType: order.orderType,
+      createdAt: order.createdAt,
+    },
+  };
+}
+
+async function fetchOrderById(orderId) {
+  try {
+    const response = await fetch(`/api/orders/${orderId}`);
+    if (response.ok) return response.json();
+  } catch {
+    /* fall through to session storage */
+  }
+
+  const stored = sessionStorage.getItem(`order_${orderId}`);
+  if (stored) {
+    return { success: true, order: JSON.parse(stored) };
+  }
+
+  return { success: false };
 }
 
 const FOOD_IMAGE_FALLBACK =
@@ -625,10 +706,7 @@ async function loadPopularItems() {
   if (!container) return;
 
   try {
-    const response = await fetch('/api/menu');
-    if (!response.ok) throw new Error('Failed to load menu');
-
-    const menu = await response.json();
+    const menu = await fetchMenu();
     const popular = menu.filter((item) => POPULAR_IDS.includes(item.id));
 
     container.innerHTML = '';
@@ -720,10 +798,7 @@ async function loadMenu() {
   if (!container) return;
 
   try {
-    const response = await fetch('/api/menu');
-    if (!response.ok) throw new Error('Failed to load menu');
-
-    allMenuItems = await response.json();
+    allMenuItems = await fetchMenu();
     renderCategoryFilters();
     renderMenu();
   } catch {
@@ -750,7 +825,7 @@ function renderCartItems() {
       <div class="cart-empty">
         <div class="cart-empty__icon">🛒</div>
         <p class="cart-empty__text">Your cart is empty. Add some delicious items from our menu!</p>
-        <a href="/menu.html" class="btn btn--primary">Browse Menu</a>
+        <a href="index.html?page=menu" class="btn btn--primary">Browse Menu</a>
       </div>
     `;
     document.getElementById('place-order-btn').disabled = true;
@@ -941,15 +1016,9 @@ async function handleCheckout(event) {
   };
 
   try {
-    const response = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
-    });
+    const result = await submitOrder(orderData);
 
-    const result = await response.json();
-
-    if (!response.ok) {
+    if (!result.success) {
       const msg = result.errors ? result.errors.join(' ') : 'Failed to place order.';
       showAlert(msg);
       btn.disabled = false;
@@ -958,7 +1027,7 @@ async function handleCheckout(event) {
     }
 
     Cart.clear();
-    window.location.href = `/confirmation.html?id=${result.order.id}`;
+    window.location.href = `index.html?page=confirmation&id=${result.order.id}`;
   } catch {
     showAlert('Network error. Please check your connection and try again.');
     btn.disabled = false;
@@ -1049,8 +1118,8 @@ function renderConfirmation(order) {
     </div>
 
     <div class="confirmation__actions">
-      <a href="/menu.html" class="btn btn--primary">Order Again</a>
-      <a href="/index.html" class="btn btn--outline">Back to Home</a>
+      <a href="index.html?page=menu" class="btn btn--primary">Order Again</a>
+      <a href="index.html" class="btn btn--outline">Back to Home</a>
     </div>
   `;
 }
@@ -1060,8 +1129,8 @@ function renderError(message) {
   container.innerHTML = `
     <div class="alert alert--error">${message}</div>
     <div class="confirmation__actions" style="margin-top: 1.5rem;">
-      <a href="/cart.html" class="btn btn--primary">Return to Cart</a>
-      <a href="/index.html" class="btn btn--outline">Back to Home</a>
+      <a href="index.html?page=cart" class="btn btn--primary">Return to Cart</a>
+      <a href="index.html" class="btn btn--outline">Back to Home</a>
     </div>
   `;
 }
@@ -1076,10 +1145,9 @@ async function loadOrder() {
   }
 
   try {
-    const response = await fetch(`/api/orders/${orderId}`);
-    const result = await response.json();
+    const result = await fetchOrderById(orderId);
 
-    if (!response.ok || !result.success) {
+    if (!result.success || !result.order) {
       renderError('Order not found. It may have expired or the ID is invalid.');
       return;
     }
@@ -1112,6 +1180,12 @@ const PAGE_META = {
 };
 
 function getCurrentPage() {
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get('page');
+  if (page === 'menu') return 'menu';
+  if (page === 'cart') return 'cart';
+  if (page === 'confirmation') return 'confirmation';
+
   const path = window.location.pathname.split('/').pop() || 'index.html';
   if (path === 'menu.html') return 'menu';
   if (path === 'cart.html') return 'cart';
